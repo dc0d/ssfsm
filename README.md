@@ -1,0 +1,2 @@
+# ssfsm
+simple straightforward fsm
