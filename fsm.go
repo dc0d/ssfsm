@@ -37,7 +37,8 @@ func (sm *FSM) State() string { return sm.state }
 
 // Trigger triggers an event. If async is set to true, then Trigger would block.
 // And if any other transitions are in progress, it will return an error. This implies
-// that Trigger must not get called recursively.
+// that Trigger must not get called recursively. If the transition callback return an error,
+// state will not change.
 func (sm *FSM) Trigger(event string) error {
 	if sm.mx != nil {
 		select {
