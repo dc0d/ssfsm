@@ -21,7 +21,7 @@ func TestSyncFSM(t *testing.T) {
 		Transition{"TIMEOUT", "IDLE", "FINAL"}:        lgf,
 	})
 
-	assert.Equal(t, "START", fsm.state)
+	assert.Equal(t, "START", fsm.State())
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
 	assert.Equal(t, ErrStateConflict, errors.Cause(err))
@@ -35,7 +35,7 @@ func TestSyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -45,19 +45,19 @@ func TestSyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVED")
 	assert.Nil(t, err)
-	assert.Equal(t, "IDLE", fsm.state)
+	assert.Equal(t, "IDLE", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Nil(t, err)
-	assert.Equal(t, "FINAL", fsm.state)
+	assert.Equal(t, "FINAL", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -83,7 +83,7 @@ func TestTransitionCallbackErrorSyncFSM(t *testing.T) {
 		Transition{"TIMEOUT", "IDLE", "FINAL"}:        lgf,
 	})
 
-	assert.Equal(t, "START", fsm.state)
+	assert.Equal(t, "START", fsm.State())
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
 	assert.Equal(t, ErrStateConflict, errors.Cause(err))
@@ -97,7 +97,7 @@ func TestTransitionCallbackErrorSyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -107,33 +107,33 @@ func TestTransitionCallbackErrorSyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("COMPLETED")
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "NOT COMPLETE"))
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	condition = true
 	err = fsm.Trigger("COMPLETED")
 	assert.Nil(t, err)
-	assert.Equal(t, "IDLE", fsm.state)
+	assert.Equal(t, "IDLE", fsm.State())
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVED")
 	assert.Nil(t, err)
-	assert.Equal(t, "IDLE", fsm.state)
+	assert.Equal(t, "IDLE", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Nil(t, err)
-	assert.Equal(t, "FINAL", fsm.state)
+	assert.Equal(t, "FINAL", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -151,7 +151,7 @@ func TestAsyncFSM(t *testing.T) {
 		Transition{"TIMEOUT", "IDLE", "FINAL"}:        lgf,
 	})
 
-	assert.Equal(t, "START", fsm.state)
+	assert.Equal(t, "START", fsm.State())
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
 	assert.Equal(t, ErrStateConflict, errors.Cause(err))
@@ -160,7 +160,7 @@ func TestAsyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -170,19 +170,19 @@ func TestAsyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVED")
 	assert.Nil(t, err)
-	assert.Equal(t, "IDLE", fsm.state)
+	assert.Equal(t, "IDLE", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Nil(t, err)
-	assert.Equal(t, "FINAL", fsm.state)
+	assert.Equal(t, "FINAL", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -219,7 +219,7 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 		Transition{"TIMEOUT", "IDLE", "FINAL"}:        lgf,
 	})
 
-	assert.Equal(t, "START", fsm.state)
+	assert.Equal(t, "START", fsm.State())
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
 	assert.Equal(t, ErrStateConflict, errors.Cause(err))
@@ -228,7 +228,7 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
@@ -238,21 +238,21 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	<-time.After(time.Millisecond * 100)
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
-	assert.Equal(t, "WAITING", fsm.state)
+	assert.Equal(t, "WAITING", fsm.State())
 
 	err = fsm.Trigger("RECEIVED")
 	assert.Nil(t, err)
-	assert.Equal(t, "IDLE", fsm.state)
+	assert.Equal(t, "IDLE", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Nil(t, err)
-	assert.Equal(t, "FINAL", fsm.state)
+	assert.Equal(t, "FINAL", fsm.State())
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
