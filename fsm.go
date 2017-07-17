@@ -1,6 +1,19 @@
 package ssfsm
 
-import "fmt"
+import (
+	"github.com/pkg/errors"
+)
+
+type serr string
+
+func (v serr) Error() string { return string(v) }
+
+// Main Cause Errors
+var (
+	ErrTransitionConflict error = serr("transition_conflict: another transition is in progress")
+	ErrEventNotFound      error = serr("event_not_found")
+	ErrStateConflict      error = serr("state_conflict: this event triggers no state")
+)
 
 // Transition represents a transition
 type Transition struct {
@@ -20,23 +33,24 @@ type next struct {
 }
 
 // Trigger triggers an event. If async is set to true, then Trigger would block.
-// And if any other transitions are in progress, it will return an error.
+// And if any other transitions are in progress, it will return an error. This implies
+// that Trigger must not get called recursively.
 func (sm *FSM) Trigger(event string) error {
 	if sm.mx != nil {
 		select {
 		case *sm.mx <- struct{}{}:
 			defer func() { <-*sm.mx }()
 		default:
-			return fmt.Errorf("another transition is in progress")
+			return ErrTransitionConflict
 		}
 	}
 	vx, ok := sm.graph[event]
 	if !ok {
-		return fmt.Errorf("event not found: " + event)
+		return errors.Wrap(ErrEventNotFound, "event: "+event)
 	}
 	nx, ok := vx[sm.state]
 	if !ok {
-		return fmt.Errorf("no state found for event: " + event + " current state: " + sm.state)
+		return errors.Wrap(ErrStateConflict, "event: "+event+" current state: "+sm.state)
 	}
 	starting := sm.state
 	defer func() {

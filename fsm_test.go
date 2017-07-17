@@ -1,10 +1,12 @@
 package ssfsm
 
 import (
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +22,14 @@ func TestSyncFSM(t *testing.T) {
 	assert.Equal(t, "START", fsm.state)
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: RECEIVING current state: START", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: RECEIVING"))
+	assert.True(t, strings.Contains(err.Error(), "state: START"))
+
+	err = fsm.Trigger("NONSENSE")
+	assert.Error(t, err)
+	assert.Equal(t, ErrEventNotFound, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: NONSENSE"))
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
@@ -28,7 +37,9 @@ func TestSyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: TIMEOUT current state: WAITING", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: TIMEOUT"))
+	assert.True(t, strings.Contains(err.Error(), "state: WAITING"))
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
@@ -48,7 +59,9 @@ func TestSyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: TIMEOUT current state: FINAL", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: TIMEOUT"))
+	assert.True(t, strings.Contains(err.Error(), "state: FINAL"))
 }
 
 func TestAsyncFSM(t *testing.T) {
@@ -63,7 +76,9 @@ func TestAsyncFSM(t *testing.T) {
 	assert.Equal(t, "START", fsm.state)
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: RECEIVING current state: START", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: RECEIVING"))
+	assert.True(t, strings.Contains(err.Error(), "state: START"))
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
@@ -71,7 +86,9 @@ func TestAsyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: TIMEOUT current state: WAITING", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: TIMEOUT"))
+	assert.True(t, strings.Contains(err.Error(), "state: WAITING"))
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
@@ -91,7 +108,9 @@ func TestAsyncFSM(t *testing.T) {
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: TIMEOUT current state: FINAL", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: TIMEOUT"))
+	assert.True(t, strings.Contains(err.Error(), "state: FINAL"))
 }
 
 func TestAsyncFSMWithCallback(t *testing.T) {
@@ -107,6 +126,10 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 				err := fsm.Trigger("RECEIVING")
 				assert.Nil(t, err)
 			}()
+
+			err := fsm.Trigger("RECEIVING")
+			assert.Error(t, err)
+			assert.Equal(t, ErrTransitionConflict, errors.Cause(err))
 		}
 	}
 
@@ -120,7 +143,9 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 	assert.Equal(t, "START", fsm.state)
 	err := fsm.Trigger("RECEIVING")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: RECEIVING current state: START", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: RECEIVING"))
+	assert.True(t, strings.Contains(err.Error(), "state: START"))
 
 	err = fsm.Trigger("INCOMMING")
 	assert.Nil(t, err)
@@ -128,7 +153,9 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: TIMEOUT current state: WAITING", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: TIMEOUT"))
+	assert.True(t, strings.Contains(err.Error(), "state: WAITING"))
 
 	err = fsm.Trigger("RECEIVING")
 	assert.Nil(t, err)
@@ -150,7 +177,9 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 
 	err = fsm.Trigger("TIMEOUT")
 	assert.Error(t, err)
-	assert.Equal(t, "no state found for event: TIMEOUT current state: FINAL", err.Error())
+	assert.Equal(t, ErrStateConflict, errors.Cause(err))
+	assert.True(t, strings.Contains(err.Error(), "event: TIMEOUT"))
+	assert.True(t, strings.Contains(err.Error(), "state: FINAL"))
 
 	assert.Equal(t, 3, cnt)
 }
