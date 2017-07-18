@@ -29,7 +29,7 @@ type FSM struct {
 
 type next struct {
 	transition Transition
-	callback   func(*FSM, Transition) error
+	callback   func(Transition) error
 }
 
 // State returns current state
@@ -70,12 +70,12 @@ func (sm *FSM) Trigger(event string) error {
 	if nx.callback == nil {
 		return nil
 	}
-	err = nx.callback(sm, nx.transition)
+	err = nx.callback(nx.transition)
 	return err
 }
 
 // Table represents a transition table between states
-type Table map[Transition]func(*FSM, Transition) error
+type Table map[Transition]func(Transition) error
 
 // NewFSM creates an instance of FSM. If async is set to true, then Trigger would block.
 // And if any other transitions are in progress, it will return an error.

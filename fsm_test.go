@@ -13,7 +13,7 @@ import (
 )
 
 func TestSyncFSM(t *testing.T) {
-	var lgf = func(fsm *FSM, tx Transition) error { return nil }
+	var lgf = func(tx Transition) error { return nil }
 	fsm := NewFSM(false, "START", Table{
 		Transition{"INCOMMING", "START", "WAITING"}:   lgf,
 		Transition{"RECEIVING", "WAITING", "WAITING"}: lgf,
@@ -68,7 +68,7 @@ func TestSyncFSM(t *testing.T) {
 
 func TestTransitionCallbackErrorSyncFSM(t *testing.T) {
 	condition := false
-	var lgf = func(fsm *FSM, tx Transition) error {
+	var lgf = func(tx Transition) error {
 		if tx.Event == "COMPLETED" && !condition {
 			return fmt.Errorf("NOT COMPLETE")
 		}
@@ -143,7 +143,7 @@ func TestTransitionCallbackErrorSyncFSM(t *testing.T) {
 }
 
 func TestAsyncFSM(t *testing.T) {
-	var lgf = func(fsm *FSM, tx Transition) error { return nil }
+	var lgf = func(tx Transition) error { return nil }
 	fsm := NewFSM(true, "START", Table{
 		Transition{"INCOMMING", "START", "WAITING"}:   lgf,
 		Transition{"RECEIVING", "WAITING", "WAITING"}: lgf,
@@ -195,7 +195,9 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 	cnt := 0
 	mx := new(sync.Mutex)
 
-	var lgf = func(fsm *FSM, tx Transition) error {
+	var fsm *FSM
+
+	var lgf = func(tx Transition) error {
 		if tx.Event == "RECEIVING" && cnt < 3 {
 			mx.Lock()
 			defer mx.Unlock()
@@ -212,7 +214,7 @@ func TestAsyncFSMWithCallback(t *testing.T) {
 		return nil
 	}
 
-	fsm := NewFSM(true, "START", Table{
+	fsm = NewFSM(true, "START", Table{
 		Transition{"INCOMMING", "START", "WAITING"}:   lgf,
 		Transition{"RECEIVING", "WAITING", "WAITING"}: lgf,
 		Transition{"RECEIVED", "WAITING", "IDLE"}:     lgf,
